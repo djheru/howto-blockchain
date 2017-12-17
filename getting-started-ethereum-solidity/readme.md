@@ -261,4 +261,40 @@ nonce that will make the hash small enough to match the difficulty target
 
 ## Development Environment Setup
 
+#### Installing the Libraries
+
+- Geth
+  - CLI tool implementing Ethereum
+```
+# Install
+sudo apt install software-properties-common
+sudo add-apt-repository -y ppa:ethereum/ethereum
+sudo apt update 
+sudo apt install ethereum
+geth version
+```
+- TestRPC
+  - Set up a test node
+  - Is an emulator
+  - node.js
+  - Runs in memory, doesn't store anything on disk
+  - Not connected to network, for development
+  - `npm install -g ethereumjs-testrpc`
+- Truffle
+  - Build framework
+  - Write/test/deploy smart contracts
+  - truffleframework.com
+  - `npm install -g truffle`
+- Atom IDE
+  - Syntax highlighting for Solidity
+  
+```
+sudo add-apt-repository ppa:webupd8team/atom
+sudo apt update
+sudo apt install atom
+apm install language-ethereum
+```
+
+#### Setting up a Private Network
+
 ## Building a DApp from Scratch
