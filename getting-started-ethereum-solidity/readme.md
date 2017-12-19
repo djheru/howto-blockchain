@@ -96,7 +96,7 @@ are bundled into ordered blocks
       - The winner of the competition gets to apply a special transaction that applies a certain amount of bitcoins to himself
         - The amount is determined by the consensus algorithm
         - currently 12 bitcoins per block
-          - Divided by 2 every 4 years
+  - Divided by 2 every 4 years
       - Provides incentive to not jeopardize the currency
       
   - Ethereum
@@ -296,5 +296,175 @@ apm install language-ethereum
 ```
 
 #### Setting up a Private Network
+- `mkdir -p chainskills/private` - make working directory
+- `atom genesis.json` - create a genesis block
+
+```json
+{
+ "nonce": "0x0000000000000042",
+ "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+ "difficulty": "0x400", // correlates to the avg # of times a miner needs to run the hashing function to solve the consensus puzzle
+ "alloc": {},
+ "coinbase": "0x0000000000000000000000000000000000000000", // Address that receives the reward after a successful mine
+ "timestamp": "0x0", // Used by EVM to adjust the difficulty if the difference in time between too blocks is to large/small
+ "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000", // Contains the hash value of the parent block
+ "extraData": "0x", 
+ "gasLimit": "0xffffffff", // defines the maximum gas value of each block (limits the size of blocks)
+ "config": {
+    "chainId": 4224, // network ID
+    "homesteadBlock": 0, // Defines the sequence # of the block starting from which the homestead protocol upgrade should be applied
+    "eip155Block": 0,
+    "eip158Block": 0
+ }
+}
+```
+- `geth --datadir ./ init genesis.json` - Initialize a private network instalce from geth
+```
+# Output: 
+
+WARN [12-17|16:36:29] No etherbase set and no accounts found as default 
+INFO [12-17|16:36:29] Allocated cache and file handles database=/media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private/geth/chaindata cache=16 handles=16
+INFO [12-17|16:36:29] Writing custom genesis block 
+INFO [12-17|16:36:29] Successfully wrote genesis state database=chaindata      hash=272003…b62890
+INFO [12-17|16:36:29] Allocated cache and file handles database=/media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private/geth/lightchaindata cache=16 handles=16
+INFO [12-17|16:36:29] Writing custom genesis block 
+INFO [12-17|16:36:29] Successfully wrote genesis state database=lightchaindata      hash=272003…b62890
+
+# $ tree .
+.
+├── genesis.json
+├── geth
+│   ├── chaindata
+│   │   ├── 000001.log
+│   │   ├── CURRENT
+│   │   ├── LOCK
+│   │   ├── LOG
+│   │   └── MANIFEST-000000
+│   └── lightchaindata
+│       ├── 000001.log
+│       ├── CURRENT
+│       ├── LOCK
+│       ├── LOG
+│       └── MANIFEST-000000
+└── keystore
+```
+
+#### Create Test Accounts
+
+- `geth --datadir ./ account new` - create a new account
+  - Enter and confirm the passphrase for this account
+  - It will provide the address (Hash of the public key)
+    - e.g. `Address: {4b3513088669ebeb427de5089de82bcedcee8c15}`
+  - Make two more
+    - Address: `{077cf994448f4572dcbba1f1704398a71ea938a8}`
+    - Address: `{b7db3e17a321a5afd3163180d41e9ebfb6c6f9df}`
+- See the new accounts are in the keystore
+  - `tree .`
+
+```
+.
+├── genesis.json
+├── geth
+│   ├── chaindata
+│   │   ├── 000001.log
+│   │   ├── CURRENT
+│   │   ├── LOCK
+│   │   ├── LOG
+│   │   └── MANIFEST-000000
+│   └── lightchaindata
+│       ├── 000001.log
+│       ├── CURRENT
+│       ├── LOCK
+│       ├── LOG
+│       └── MANIFEST-000000
+└── keystore // Our new accounts
+    ├── UTC--2017-12-17T21-41-49.364015521Z--4b3513088669ebeb427de5089de82bcedcee8c15
+    ├── UTC--2017-12-17T21-43-30.883654803Z--077cf994448f4572dcbba1f1704398a71ea938a8
+    └── UTC--2017-12-17T21-44-01.674215997Z--b7db3e17a321a5afd3163180d41e9ebfb6c6f9df
+```
+- `geth --datadir ./ account list` - List the accounts with geth
+```
+Account #0: {4b3513088669ebeb427de5089de82bcedcee8c15} keystore:///media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private/keystore/UTC--2017-12-17T21-41-49.364015521Z--4b3513088669ebeb427de5089de82bcedcee8c15
+Account #1: {077cf994448f4572dcbba1f1704398a71ea938a8} keystore:///media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private/keystore/UTC--2017-12-17T21-43-30.883654803Z--077cf994448f4572dcbba1f1704398a71ea938a8
+Account #2: {b7db3e17a321a5afd3163180d41e9ebfb6c6f9df} keystore:///media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private/keystore/UTC--2017-12-17T21-44-01.674215997Z--b7db3e17a321a5afd3163180d41e9ebfb6c6f9df
+```
+
+#### Starting Up the Network
+
+- Create a startup script
+
+```
+# In a file "startup.sh"
+geth \
+  --networkid 4224 \
+  --mine \
+  --datadir "/path/to/chainskills/private" \
+  --nodiscover \
+  --rpc --rpcport "8545" \
+  --port "30303" \
+  --rpccorsdomain "*" \
+  --nat "any" \
+  --rpcapi eth,web3,personal,net \
+  --unlock 0 \
+  --password "/path/to/chainskils/private/password.sec"
+  --ipcpath "~/Ethereum/geth.ipc"
+```
+  - Don't forget to set the execution bit
+    - `chmod a+x startnode.sh`
+- `startnode.sh` - start it up
+- Now it's mining ETH under that account
+
+#### Examining the Node in the Geth Console
+
+- https://github.com/ethereum/go-ethereum/wiki/JavaScript-Console
+- `geth attach` - Attach to the running node
+
+```
+Welcome to the Geth JavaScript console!
+
+instance: Geth/v1.7.3-stable-4bb3c89d/linux-amd64/go1.9
+coinbase: 0x4b3513088669ebeb427de5089de82bcedcee8c15
+at block: 224 (Sun, 17 Dec 2017 17:09:30 EST)
+ datadir: /media/phil/InternalStorage/Sites/_howto/howto-blockchain/getting-started-ethereum-solidity/chainskills/private
+ modules: admin:1.0 debug:1.0 eth:1.0 miner:1.0 net:1.0 personal:1.0 rpc:1.0 txpool:1.0 web3:1.0
+
+> eth.accounts
+["0x4b3513088669ebeb427de5089de82bcedcee8c15", "0x077cf994448f4572dcbba1f1704398a71ea938a8", "0xb7db3e17a321a5afd3163180d41e9ebfb6c6f9df"]
+
+> eth.coinbase
+"0x4b3513088669ebeb427de5089de82bcedcee8c15"
+  
+> eth.getBalance(eth.coinbase)
+2.325e+21 // Ether in Wei units
+
+> web3.fromWei(eth.getBalance(eth.coinbase), "ether")
+2525 // Ether in ETH units
+
+> miner.stop()
+true
+
+> miner.start(8) # specify the number of threads
+null
+
+> net.version
+"4224"
+
+> personal.unlockAccount(eth.accounts[1], "hjklay11", 300)
+```
+
+#### Transferring Ethereum Between accounts
+```
+> eth.accounts
+> eth.coinbase
+> web3.fromWei(eth.getBalance(eth.coinbase), 'ether');
+> web3.fromWei(eth.getBalance(eth.accounts[1]), 'ether');
+> web3.fromWei(eth.getBalance(eth.accounts[2]), 'ether');
+
+> eth.sendTransaction({ from: eth.coinbase, to: eth.accounts[1], value: web3.toWei(100, 'ether') });
+> web3.fromWei(eth.getBalance(eth.accounts[1]), 'ether');
+
+> eth.sendTransaction({ from: eth.coinbase, to: eth.accounts[2], value: web3.toWei(100, 'ether') });
+> web3.fromWei(eth.getBalance(eth.accounts[2]), 'ether');
+```
 
 ## Building a DApp from Scratch
