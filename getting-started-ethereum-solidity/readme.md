@@ -467,4 +467,52 @@ null
 > web3.fromWei(eth.getBalance(eth.accounts[2]), 'ether');
 ```
 
-## Building a DApp from Scratch
+#### Setting up Myst
+
+- A distributed application browser
+  - A web browser
+  - An ethereum node
+- `https://github.com/ethereum/mist/releases`
+  - Download the package for your OS
+- Icons on the bottom left with mining stats
+  - hash rate
+  - Number of blocks in the chain
+  - Number of seconds last block
+  - Number of peers
+- Main section of page - Wallets
+  - Accounts with balances
+  - Add Account Button
+- Top Tab - Send
+  - Select a to and from 
+  - Enter the amount
+  - Select fee
+    - Higher the fee, faster the transaction
+- Bottom - Latest Transactions
+  - See the transaction
+- Menu - Backup
+  - Backup the keystore
+    - Store it in a safe place
+    - Encrypted
+    - Inaccessible
+
+#### Setting up MetaMask
+
+- `http://metamask.io`
+- Chrome extension
+- Does not require Ethereum node to be present locally
+  - uses the node installed on metamask servers
+  - metamask extension connects
+  - Can connect to several networks
+    - The main chain
+    - The test chains
+    - Any private chain
+  - Widely used and well-maintained
+  - `https://www.youtube.com/watch?v=6Gf_kRE4MJU`
+- Install the extension
+- Have a password
+- Save the recovery phrase
+- Connect to the Private Network
+- Click the circle person icon to import 
+  - Need to load the chrome extension into a tab
+  - chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/popup.html
+- Import json key from the keybase directory
