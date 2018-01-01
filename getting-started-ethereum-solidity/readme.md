@@ -608,4 +608,167 @@ greetingsInstance.getGreetings();
 // 'Hello Chainskills!'
 ```
 
-- 
+## Using Truffle as a Build Tool
+
+#### Truffle Project Setup 
+
+- `mkdir greetings-truffle && cd $_`
+- `truffle init` - downloads some generator/boilerplate stuff
+- folder structure:
+```
+- contracts
+  Migrations.sol
+- migrations
+  1_initial_migration.js
+- test
+truffle.js
+truffle-config.js
+```
+
+#### Deploying
+
+- Set up config and deployment modules
+
+```javascript
+// in ./truffle.js
+module.exports = {
+  // See <http://truffleframework.com/docs/advanced/configuration>
+  // to customize your Truffle configuration!
+  networks: {
+    development: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '*'
+    }
+  }
+};
+
+// in ./migrations/2_deploy_contracts
+var Greetings = artifacts.require('./Greetings.sol');
+module.exports = function(deployer) {
+  deployer.deploy(Greetings);
+};
+```
+
+- `truffle migrate`
+```
+Using network 'development'.
+
+Running migration: 1_initial_migration.js
+  Deploying Migrations...
+  ... 0x8eb36f20263b074accbaaff8967b0706769ebd80e097fc10010d2a97a6dfa0d8
+  Migrations: 0xabc5dcb76bc6a33edb114da8f2f007dcf03e1977
+Saving successful migration to network...
+  ... 0xb085d57e1318974b94dbd32c97043a383a541530d8ba4aed5ed69ee201ad5569
+Saving artifacts...
+Running migration: 2_deploy_contracts.js
+  Deploying Greetings...
+  ... 0xcadb67e57f959a2b55291f613e32500ffbbd794c5c463a99f445d19bcf3a248a
+  Greetings: 0x3ff7874328a755dcc36c0c8e1aa79a214153531d
+Saving successful migration to network...
+  ... 0xf7f4e555029bff7a7840229c4a3a14acbc2f958cb584a0723e7486bc47fe3f18
+Saving artifacts...
+```
+
+#### Truffle Console
+
+- `truffle console` - It's a custom node repl
+- `Greetings.address` - e.g. '0x3ff7874328a755dcc36c0c8e1aa79a214153531d'
+- `we3.eth.accounts` - still have access to web3
+
+```javascript
+// It is a higher-level abstraction wrapping the contract
+let app;
+Greetings.deployed().then(function(instance) { app = instance; });
+
+app.getGreetings.call(); // getGreetings is called statically - no transaction on the chain - only querying the state
+app.setGreetings('supdawg', { from: web3.eth.accounts[0] });
+
+/*
+{ tx: '0x26e6214a9f3e3e62d5a9eda20dfb3be7d8ab7e612f511d0d317674d0f588fb69',
+  receipt: 
+   { transactionHash: '0x26e6214a9f3e3e62d5a9eda20dfb3be7d8ab7e612f511d0d317674d0f588fb69',
+     transactionIndex: 0,
+     blockHash: '0x1ea0e08d9dce0cc29e9671d462bc646bced053529dd010c03be44f90858c6576',
+     blockNumber: 7,
+     gasUsed: 33160,
+     cumulativeGasUsed: 33160,
+     contractAddress: null,
+     logs: [],
+     status: 1 },
+  logs: [] }
+
+ */
+
+app.getGreetings.call();
+// 'supdawg's
+```
+
+## Transactions & Blocks
+
+- A blockchain is an immutable set of blocks linked together in a specific order
+- A block is a set of transactions
+- A transaction can be one of three things
+  - Transfer of ether
+  - Code of a smart contract
+  - Invocation of a function/method of a smart contract
+- Transaction has 4 fields
+  - From - who is paying for the transaction
+  = To - Recipient of transaction or 0 when deploying a contract
+  - Value - Amount of ether transferred, can be zero
+  - Data or input 
+    - Code of a smart contract
+    - arguments when invoking a method of a smart contract
+    - nothing for ether transfer
+
+- `geth attach http://localhost:8545`
+
+```javascript
+/*
+// examining smart contract transactions
+Transaction: 0xa1e2133e6c3439522570ba48af65cac97b47b76141314dc7f5d1d69abdd57e40
+  Gas usage: 26981
+  Block Number: 4
+  Block Time: Mon Jan 01 2018 14:34:51 GMT-0500 (EST)
+ */
+ eth.getTransaction('0xcadb67e57f959a2b55291f613e32500ffbbd794c5c463a99f445d19bcf3a248a');
+/*
+{
+  blockHash: "0x8e2612a334bd8ecf369895e0031de262372acf3ced3184dc514cfe53744f84e8",
+  blockNumber: 3,
+  from: "0x98234576ebb7cecf4e6e5b0a9da6b940bcc65ad8",
+  gas: 6721975,
+  gasPrice: 100000000000,
+  hash: "0xcadb67e57f959a2b55291f613e32500ffbbd794c5c463a99f445d19bcf3a248a",
+  input: "0x6060604052341561000f57600080fd5b6040805190810160405280601581526020017f49276d2072656164792c2049276d2072656164792100000000000000000000008152506000908051906020019061005a929190610060565b50610105565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106100a157805160ff19168380011785556100cf565b828001600101855582156100cf579182015b828111156100ce5782518255916020019190600101906100b3565b5b5090506100dc91906100e0565b5090565b61010291905b808211156100fe5760008160009055506001016100e6565b5090565b90565b6102e3806101146000396000f30060606040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806349da5de414610051578063ca4c3a41146100ae575b600080fd5b341561005c57600080fd5b6100ac600480803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509190505061013c565b005b34156100b957600080fd5b6100c1610156565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156101015780820151818401526020810190506100e6565b50505050905090810190601f16801561012e5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b80600090805190602001906101529291906101fe565b5050565b61015e61027e565b60008054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156101f45780601f106101c9576101008083540402835291602001916101f4565b820191906000526020600020905b8154815290600101906020018083116101d757829003601f168201915b5050505050905090565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061023f57805160ff191683800117855561026d565b8280016001018555821561026d579182015b8281111561026c578251825591602001919060010190610251565b5b50905061027a9190610292565b5090565b602060405190810160405280600081525090565b6102b491905b808211156102b0576000816000905550600101610298565b5090565b905600a165627a7a72305820b1c813a6718ab7352a468436664b03c11e4b8ed70334e123df7ade4db6c0dae50029",
+  nonce: 2,
+  to: "0x0",
+  transactionIndex: 0,
+  value: 0
+}
+*/
+eth.getBlock('0x8e2612a334bd8ecf369895e0031de262372acf3ced3184dc514cfe53744f84e8');
+/*
+{
+  difficulty: 0,
+  extraData: "0x0",
+  gasLimit: 6721975,
+  gasUsed: 284796,
+  hash: "0x8e2612a334bd8ecf369895e0031de262372acf3ced3184dc514cfe53744f84e8",
+  logsBloom: "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+  miner: "0x0000000000000000000000000000000000000000",
+  nonce: "0x0",
+  number: 3,
+  parentHash: "0xf4a6f31a4aa6bcb3300ea3775c9a4001c1606a6a748aa77d6f39979c0ff09efc",
+  receiptsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  sha3Uncles: "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+  size: 1000,
+  stateRoot: "0xee5f6679273c1b6654d5f997c54e29508eeae28c88bf869a0973a95213a85da7",
+  timestamp: 1514835291,
+  totalDifficulty: 0,
+  transactions: ["0xcadb67e57f959a2b55291f613e32500ffbbd794c5c463a99f445d19bcf3a248a"],
+  transactionsRoot: "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+  uncles: []
+}
+*/
+```
