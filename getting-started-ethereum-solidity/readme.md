@@ -516,3 +516,96 @@ null
   - Need to load the chrome extension into a tab
   - chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/popup.html
 - Import json key from the keybase directory
+
+## Hello Smart Contract (Greetings)
+
+- `mkdir greetings && cd $_`
+- `npm init -y`
+- `npm install -S web3@0.20.0 solc`
+- `touch Greetings.sol`
+  - Solidity files have a .sol extension
+  
+```
+// Example solidity contract
+pragma solidity ^0.4.11;
+contract Greetings {
+  string message;
+  function Greetings() public {
+    message = "I'm ready, I'm ready!";
+  }
+  function setGreetings(string _message) public {
+    message = _message;
+  }
+  function getGreetings() public constant returns (string) {
+    reutrn message;
+  }
+}
+```
+
+#### Deploying the Smart Contract
+
+- `testrpc` - start the node
+- `node` - start the repl
+
+```javascript
+// Deploying the contract
+
+//set up web3 to connect to the geth api
+const Web3 = require('web3');
+const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
+console.log(web3.eth.accounts);
+
+// compile the contract
+const solc = require('solc');
+const sourceCode = fs.readFileSync('Greetings.sol').toString(); // read in the solidity file
+const compiledCode = solc.compile(sourceCode);
+
+// Application Binary Interface of the contract
+const contractABI = JSON.parse(compiledCode.contracts[':Greetings'].interface);
+// bytecode
+const byteCode = compiledCode.contracts[':Greetings'].bytecode;
+
+// instance of the contract object
+const greetingsContract = web3.eth.contract(contractABI);
+// deploy the contract
+// data - the bytecode of the compiled contract
+// from - the account address from which we deploy the contract
+// gas - the payment for priority of deploying the contract
+const greetingsDeployed = greetingsContract.new({ data: '0x' + byteCode, from: web3.eth.accounts[0], gas: 4700000 });
+
+// View contract details
+console.log('the deployed greeting: ', greetingsDeployed);
+
+/*
+// output of the testrpc node
+  Transaction: 0xedb531ce6c4eaec00ed98845481b797cea9e170c75b52beeb83db8292a690182
+  Contract created: 0x3de2d5a49a7e54586206c4429d996f88864d179e // it the address of the contract on the node
+  Gas usage: 284796
+  Block Number: 1
+  Block Time: Mon Jan 01 2018 12:01:03 GMT-0500 (EST)
+
+*/
+
+const contractAddress = greetingsDeployed.address; // same as reflected in the "Contract created:" line of the output ^
+
+// this is the instance of the contract (class) and you can call the public methods on it
+const greetingsInstance = greetingsContract.at(contractAddress); 
+
+greetingsInstance.getGreetings(); // should output the default greeting
+greetingsInstance.setGreetings('Hello Chainskills!', { from: web3.eth.accounts[0] });
+// returns the transaction identifier, e.g. '0x32069b435920a777423f7bb07788d88e8ef209592da6d19a69a5b1314eff897d'
+/*
+// node console output:
+
+  Transaction: 0x32069b435920a777423f7bb07788d88e8ef209592da6d19a69a5b1314eff897d
+  Gas usage: 33864
+  Block Number: 2
+  Block Time: Mon Jan 01 2018 12:10:29 GMT-0500 (EST)
+*/
+
+// check to see the state has been correctly updated
+greetingsInstance.getGreetings();
+// 'Hello Chainskills!'
+```
+
+- 
