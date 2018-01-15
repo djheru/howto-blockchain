@@ -820,8 +820,18 @@
       "events": {},
       "links": {},
       "address": "0x72ff8b06c95b0f07ff16f8607ba7aa3d4cfd68f9"
+    },
+    "1515963178273": {
+      "events": {},
+      "links": {},
+      "address": "0xdc4a1f6a2d8c373373c4e1b64d10b05946dec3b3"
+    },
+    "1516034654417": {
+      "events": {},
+      "links": {},
+      "address": "0xb9fd05badc70f01d3a227c4ef9b1ff43be0bc807"
     }
   },
   "schemaVersion": "1.0.1",
-  "updatedAt": "2018-01-05T03:35:54.306Z"
+  "updatedAt": "2018-01-15T17:06:09.041Z"
 }
