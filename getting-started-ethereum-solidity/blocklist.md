@@ -121,3 +121,6 @@ contract('BlockList', function (accounts) {
 ```
 
 - Run the tests - `truffle test`
+
+### Adding a Front-End
+
